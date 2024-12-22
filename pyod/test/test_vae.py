@@ -1,114 +1,121 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import print_function
+
 
 import os
 import sys
-
 import unittest
-# noinspection PyProtectedMember
-from numpy.testing import assert_allclose
-from numpy.testing import assert_array_less
-from numpy.testing import assert_equal
-from numpy.testing import assert_raises
 
+# noinspection PyProtectedMember
 from sklearn.metrics import roc_auc_score
-from sklearn.base import clone
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
+sys.path.append(os.path.abspath(os.path.dirname("__file__")))
 
 from pyod.models.vae import VAE
 from pyod.utils.data import generate_data
 
 
 class TestVAE(unittest.TestCase):
+    def assertHasAttr(self, obj, intended_attr):
+        self.assertTrue(hasattr(obj, intended_attr))
+
+    def assertInRange(self, data, lower, upper):
+        self.assertGreaterEqual(data.min(), lower)
+        self.assertLessEqual(data.max(), upper)
+
     def setUp(self):
         self.n_train = 6000
         self.n_test = 1000
         self.n_features = 300
         self.contamination = 0.1
         self.roc_floor = 0.8
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
             n_train=self.n_train, n_test=self.n_test,
             n_features=self.n_features, contamination=self.contamination,
             random_state=42)
 
-        self.clf = VAE(epochs=5, contamination=self.contamination)
+        self.clf = VAE(epoch_num=5, contamination=self.contamination)
         self.clf.fit(self.X_train)
 
     def test_parameters(self):
-        assert (hasattr(self.clf, 'decision_scores_') and
-                self.clf.decision_scores_ is not None)
-        assert (hasattr(self.clf, 'labels_') and
-                self.clf.labels_ is not None)
-        assert (hasattr(self.clf, 'threshold_') and
-                self.clf.threshold_ is not None)
-        assert (hasattr(self.clf, '_mu') and
-                self.clf._mu is not None)
-        assert (hasattr(self.clf, '_sigma') and
-                self.clf._sigma is not None)
-        assert (hasattr(self.clf, 'model_') and
-                self.clf.model_ is not None)
+        self.assertTrue(hasattr(self.clf, 'decision_scores_'))
+        self.assertIsNotNone(self.clf.decision_scores_)
+        self.assertTrue(hasattr(self.clf, 'labels_'))
+        self.assertIsNotNone(self.clf.labels_)
+        self.assertTrue(hasattr(self.clf, 'threshold_'))
+        self.assertIsNotNone(self.clf.threshold_)
+        self.assertTrue(hasattr(self.clf, '_mu'))
+        self.assertIsNotNone(self.clf._mu)
+        self.assertTrue(hasattr(self.clf, '_sigma'))
+        self.assertIsNotNone(self.clf._sigma)
+        self.assertTrue(hasattr(self.clf, 'model'))
+        self.assertIsNotNone(self.clf.model)
 
     def test_train_scores(self):
-        assert_equal(len(self.clf.decision_scores_), self.X_train.shape[0])
+        self.assertEqual(len(self.clf.decision_scores_), self.X_train.shape[0])
 
     def test_prediction_scores(self):
         pred_scores = self.clf.decision_function(self.X_test)
-
-        # check score shapes
-        assert_equal(pred_scores.shape[0], self.X_test.shape[0])
-
-        # check performance
-        assert (roc_auc_score(self.y_test, pred_scores) >= self.roc_floor)
+        self.assertEqual(pred_scores.shape[0], self.X_test.shape[0])
+        self.assertGreaterEqual(roc_auc_score(self.y_test, pred_scores),
+                                self.roc_floor)
 
     def test_prediction_labels(self):
         pred_labels = self.clf.predict(self.X_test)
-        assert_equal(pred_labels.shape, self.y_test.shape)
+        self.assertEqual(pred_labels.shape, self.y_test.shape)
 
     def test_prediction_proba(self):
         pred_proba = self.clf.predict_proba(self.X_test)
-        assert (pred_proba.min() >= 0)
-        assert (pred_proba.max() <= 1)
+        self.assertInRange(pred_proba, 0, 1)
 
     def test_prediction_proba_linear(self):
         pred_proba = self.clf.predict_proba(self.X_test, method='linear')
-        assert (pred_proba.min() >= 0)
-        assert (pred_proba.max() <= 1)
+        self.assertInRange(pred_proba, 0, 1)
 
     def test_prediction_proba_unify(self):
         pred_proba = self.clf.predict_proba(self.X_test, method='unify')
-        assert (pred_proba.min() >= 0)
-        assert (pred_proba.max() <= 1)
+        self.assertInRange(pred_proba, 0, 1)
 
     def test_prediction_proba_parameter(self):
-        with assert_raises(ValueError):
-            self.clf.predict_proba(self.X_test, method='something')
+        self.assertRaises(ValueError, self.clf.predict_proba, self.X_test,
+                          method='something')
 
     def test_prediction_labels_confidence(self):
         pred_labels, confidence = self.clf.predict(self.X_test,
                                                    return_confidence=True)
-        assert_equal(pred_labels.shape, self.y_test.shape)
-        assert_equal(confidence.shape, self.y_test.shape)
-        assert (confidence.min() >= 0)
-        assert (confidence.max() <= 1)
+        self.assertEqual(pred_labels.shape, self.y_test.shape)
+        self.assertEqual(confidence.shape, self.y_test.shape)
+        self.assertInRange(confidence, 0, 1)
 
     def test_prediction_proba_linear_confidence(self):
         pred_proba, confidence = self.clf.predict_proba(self.X_test,
                                                         method='linear',
                                                         return_confidence=True)
-        assert (pred_proba.min() >= 0)
-        assert (pred_proba.max() <= 1)
+        self.assertInRange(pred_proba, 0, 1)
+        self.assertEqual(confidence.shape, self.y_test.shape)
+        self.assertInRange(confidence, 0, 1)
 
-        assert_equal(confidence.shape, self.y_test.shape)
-        assert (confidence.min() >= 0)
-        assert (confidence.max() <= 1)
+    def test_prediction_with_rejection(self):
+        pred_labels = self.clf.predict_with_rejection(self.X_test,
+                                                      return_stats=False)
+        self.assertEqual(pred_labels.shape, self.y_test.shape)
+
+    def test_prediction_with_rejection_stats(self):
+        _, [expected_rejrate, ub_rejrate,
+            ub_cost] = self.clf.predict_with_rejection(self.X_test,
+                                                       return_stats=True)
+        self.assertGreaterEqual(expected_rejrate, 0)
+        self.assertLessEqual(expected_rejrate, 1)
+        self.assertGreaterEqual(ub_rejrate, 0)
+        self.assertLessEqual(ub_rejrate, 1)
+        self.assertGreaterEqual(ub_cost, 0)
 
     def test_fit_predict(self):
         pred_labels = self.clf.fit_predict(self.X_train)
-        assert_equal(pred_labels.shape, self.y_train.shape)
+        self.assertEqual(pred_labels.shape, self.y_train.shape)
 
     def test_fit_predict_score(self):
         self.clf.fit_predict_score(self.X_test, self.y_test)
@@ -116,12 +123,8 @@ class TestVAE(unittest.TestCase):
                                    scoring='roc_auc_score')
         self.clf.fit_predict_score(self.X_test, self.y_test,
                                    scoring='prc_n_score')
-        with assert_raises(NotImplementedError):
-            self.clf.fit_predict_score(self.X_test, self.y_test,
-                                       scoring='something')
-
-    def test_model_clone(self):
-        clone_clf = clone(self.clf)
+        self.assertRaises(NotImplementedError, self.clf.fit_predict_score,
+                          self.X_test, self.y_test, scoring='something')
 
     def tearDown(self):
         pass

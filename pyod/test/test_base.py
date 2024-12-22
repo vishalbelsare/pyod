@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
-
 import unittest
-from numpy.testing import assert_equal
-from numpy.testing import assert_raises
 
 import numpy as np
+from numpy.testing import assert_equal
+from numpy.testing import assert_raises
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -131,7 +128,7 @@ class TestBASE(unittest.TestCase):
         self.n_test = 50
         self.contamination = 0.1
         self.roc_floor = 0.6
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
             n_train=self.n_train, n_test=self.n_test,
             contamination=self.contamination)
 
@@ -170,7 +167,7 @@ class TestBASE(unittest.TestCase):
     def test_predict_proba(self):
         # TODO: create uniform testcases
         pass
-    
+
     def test_predict_confidence(self):
         # TODO: create uniform testcases
         pass

@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 """Histogram-based Outlier Detection (HBOS)
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from numba import njit
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from ..utils.utility import check_parameter
-from ..utils.utility import invert_order
-from ..utils.utility import get_optimal_n_bins
-
 from .base import BaseDetector
+from ..utils.utility import check_parameter
+from ..utils.utility import get_optimal_n_bins
+from ..utils.utility import invert_order
 
 
 class HBOS(BaseDetector):

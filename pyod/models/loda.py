@@ -2,16 +2,15 @@
 """Loda: Lightweight on-line detector of anomalies
 Adapted from tilitools (https://github.com/nicococo/tilitools) by
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import numbers
+
 import numpy as np
-from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from .base import BaseDetector
 from ..utils.utility import get_optimal_n_bins
@@ -91,7 +90,7 @@ class LODA(BaseDetector):
 
         n_components = X.shape[1]
         n_nonzero_components = np.sqrt(n_components)
-        n_zero_components = n_components - np.int(n_nonzero_components)
+        n_zero_components = n_components - int(n_nonzero_components)
 
         self.projections_ = np.random.randn(self.n_random_cuts, n_components)
 

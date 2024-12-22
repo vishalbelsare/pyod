@@ -4,10 +4,7 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
-import six
 import numpy as np
 from joblib.parallel import cpu_count
 
@@ -47,7 +44,7 @@ def _partition_estimators(n_estimators, n_jobs):
 
     # Partition estimators between jobs
     n_estimators_per_job = (n_estimators // n_jobs) * np.ones(n_jobs,
-                                                              dtype=np.int)
+                                                              dtype=int)
     n_estimators_per_job[:n_estimators % n_jobs] += 1
     starts = np.cumsum(n_estimators_per_job)
 
@@ -80,7 +77,7 @@ def _pprint(params, offset=0, printer=repr):
     params_list = list()
     this_line_length = offset
     line_sep = ',\n' + (1 + offset // 2) * ' '
-    for i, (k, v) in enumerate(sorted(six.iteritems(params))):
+    for i, (k, v) in enumerate(sorted(params.items())):
         if type(v) is float:
             # use str for representing floating point numbers
             # this way we get consistent representation across

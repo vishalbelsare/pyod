@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
-
 import unittest
+
 # noinspection PyProtectedMember
 from numpy.testing import assert_allclose
 from numpy.testing import assert_array_less
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
-
-from sklearn.utils.estimator_checks import check_estimator
-
-from sklearn.metrics import roc_auc_score
-from sklearn.base import clone
 from scipy.stats import rankdata
+from sklearn.base import clone
+from sklearn.metrics import roc_auc_score
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -33,7 +28,7 @@ class TestIForest(unittest.TestCase):
         self.n_test = 100
         self.contamination = 0.1
         self.roc_floor = 0.8
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
             n_train=self.n_train, n_test=self.n_test,
             contamination=self.contamination, random_state=42)
 
@@ -57,6 +52,12 @@ class TestIForest(unittest.TestCase):
                 self.clf.estimators_samples_ is not None)
         assert (hasattr(self.clf, 'max_samples_') and
                 self.clf.max_samples_ is not None)
+        assert (hasattr(self.clf, 'estimators_features_') and
+                self.clf.estimators_features_ is not None)
+        assert (hasattr(self.clf, 'n_features_in_') and
+                self.clf.n_features_in_ is not None)
+        assert (hasattr(self.clf, 'offset_') and
+                self.clf.offset_ is not None)
 
     def test_train_scores(self):
         assert_equal(len(self.clf.decision_scores_), self.X_train.shape[0])
@@ -111,6 +112,21 @@ class TestIForest(unittest.TestCase):
         assert_equal(confidence.shape, self.y_test.shape)
         assert (confidence.min() >= 0)
         assert (confidence.max() <= 1)
+
+    def test_prediction_with_rejection(self):
+        pred_labels = self.clf.predict_with_rejection(self.X_test,
+                                                      return_stats=False)
+        assert_equal(pred_labels.shape, self.y_test.shape)
+
+    def test_prediction_with_rejection_stats(self):
+        _, [expected_rejrate, ub_rejrate,
+            ub_cost] = self.clf.predict_with_rejection(self.X_test,
+                                                       return_stats=True)
+        assert (expected_rejrate >= 0)
+        assert (expected_rejrate <= 1)
+        assert (ub_rejrate >= 0)
+        assert (ub_rejrate <= 1)
+        assert (ub_cost >= 0)
 
     def test_fit_predict(self):
         pred_labels = self.clf.fit_predict(self.X_train)

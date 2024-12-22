@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 """k-Nearest Neighbors Detector (kNN)
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
-from __future__ import division
-from __future__ import print_function
+
 
 from warnings import warn
 
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 from sklearn.neighbors import BallTree
+from sklearn.neighbors import NearestNeighbors
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
@@ -92,7 +91,7 @@ class KNN(BaseDetector):
 
         Valid values for metric are:
 
-        - from scikit-learn: ['cityblock', 'cosine', 'euclidean', 'l1', 'l2',
+        - from scikit-learn: ['cityblock', 'euclidean', 'l1', 'l2',
           'manhattan']
 
         - from scipy.spatial.distance: ['braycurtis', 'canberra', 'chebyshev',

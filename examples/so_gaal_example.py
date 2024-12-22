@@ -5,8 +5,6 @@ Learning (SO_GAAL) for outlier detection
 # Author: Winston Li <jk_zhengli@hotmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
@@ -27,7 +25,7 @@ if __name__ == "__main__":
     n_features = 300  # number of features
 
     # Generate sample data
-    X_train, y_train, X_test, y_test = \
+    X_train, X_test, y_train, y_test = \
         generate_data(n_train=n_train,
                       n_test=n_test,
                       n_features=n_features,
@@ -36,7 +34,7 @@ if __name__ == "__main__":
 
     # train SO_GAAL detector
     clf_name = 'SO_GAAL'
-    clf = SO_GAAL(contamination=contamination)
+    clf = SO_GAAL(stop_epochs=2, contamination=contamination)
     clf.fit(X_train)
 
     # get the prediction labels and outlier scores of the training data

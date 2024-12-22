@@ -2,38 +2,25 @@
 Empirical Cumulative Distribution Functions (ECOD)
 """
 # Author: Zheng Li <jk_zhengli@hotmail.com>
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import warnings
-import numpy as np
 
-from statsmodels.distributions.empirical_distribution import ECDF
-from scipy.stats import skew
-from sklearn.utils import check_array
-from joblib import Parallel, delayed, effective_n_jobs
 import matplotlib.pyplot as plt
+import numpy as np
+from joblib import Parallel, delayed
+from scipy.stats import skew as skew_sp
+from sklearn.utils import check_array
 
 from .base import BaseDetector
 from .sklearn_base import _partition_estimators
+from ..utils.stat_models import column_ecdf
 
 
-def ecdf(X):
-    """Calculated the empirical CDF of a given dataset.
-    Parameters
-    ----------
-    X : numpy array of shape (n_samples, n_features)
-        The training dataset.
-    Returns
-    -------
-    ecdf(X) : float
-        Empirical CDF of X
-    """
-    ecdf = ECDF(X)
-    return ecdf(X)
+def skew(X, axis=0):
+    return np.nan_to_num(skew_sp(X, axis=axis))
 
 
 def _parallel_ecdf(n_dims, X):
@@ -58,8 +45,8 @@ def _parallel_ecdf(n_dims, X):
     U_r_mat = np.zeros([X.shape[0], n_dims])
 
     for i in range(n_dims):
-        U_l_mat[:, i] = ecdf(X[:, i])
-        U_r_mat[:, i] = ecdf(X[:, i] * -1)
+        U_l_mat[:, i: i + 1] = column_ecdf(X[:, i: i + 1])
+        U_r_mat[:, i: i + 1] = column_ecdf(X[:, i: i + 1] * -1)
     return U_l_mat, U_r_mat
 
 
@@ -68,7 +55,7 @@ class ECOD(BaseDetector):
     Cumulative Distribution Functions (ECOD)
     ECOD is a parameter-free, highly interpretable outlier detection algorithm
     based on empirical CDF functions.
-    See :cite:`Li2021ecod` for details.
+    See :cite:`li2021ecod` for details.
 
     Parameters
     ----------
@@ -143,13 +130,16 @@ class ECOD(BaseDetector):
         if hasattr(self, 'X_train'):
             original_size = X.shape[0]
             X = np.concatenate((self.X_train, X), axis=0)
-        self.U_l = -1 * np.log(np.apply_along_axis(ecdf, 0, X))
-        self.U_r = -1 * np.log(np.apply_along_axis(ecdf, 0, -X))
+        self.U_l = -1 * np.log(column_ecdf(X))
+        self.U_r = -1 * np.log(column_ecdf(-X))
 
         skewness = np.sign(skew(X, axis=0))
         self.U_skew = self.U_l * -1 * np.sign(
             skewness - 1) + self.U_r * np.sign(skewness + 1)
-        self.O = np.maximum(self.U_skew, self.U_l, self.U_r)
+
+        self.O = np.maximum(self.U_l, self.U_r)
+        self.O = np.maximum(self.U_skew, self.O)
+
         if hasattr(self, 'X_train'):
             decision_scores_ = self.O.sum(axis=1)[-original_size:]
         else:
@@ -208,7 +198,10 @@ class ECOD(BaseDetector):
         skewness = np.sign(skew(X, axis=0))
         self.U_skew = self.U_l * -1 * np.sign(
             skewness - 1) + self.U_r * np.sign(skewness + 1)
-        self.O = np.maximum(self.U_skew, self.U_l, self.U_r)
+
+        self.O = np.maximum(self.U_l, self.U_r)
+        self.O = np.maximum(self.U_skew, self.O)
+
         if hasattr(self, 'X_train'):
             decision_scores_ = self.O.sum(axis=1)[-original_size:]
         else:

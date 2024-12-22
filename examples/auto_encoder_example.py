@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """Example of using AutoEncoder for outlier detection
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Tiankai Yang <tiankaiy@usc.edu>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
@@ -14,6 +12,7 @@ import sys
 # if pyod is installed, no need to use the following line
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
+sys.path.append(os.path.abspath(os.path.dirname("__file__")))
 
 from pyod.models.auto_encoder import AutoEncoder
 from pyod.utils.data import generate_data
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     n_features = 300  # number of features
 
     # Generate sample data
-    X_train, y_train, X_test, y_test = \
+    X_train, X_test, y_train, y_test = \
         generate_data(n_train=n_train,
                       n_test=n_test,
                       n_features=n_features,
@@ -35,7 +34,7 @@ if __name__ == "__main__":
 
     # train AutoEncoder detector
     clf_name = 'AutoEncoder'
-    clf = AutoEncoder(epochs=30, contamination=contamination)
+    clf = AutoEncoder(epoch_num=30, contamination=contamination)
     clf.fit(X_train)
 
     # get the prediction labels and outlier scores of the training data

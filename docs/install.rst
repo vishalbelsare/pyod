@@ -1,8 +1,7 @@
 Installation
-============
+^^^^^^^^^^^^
 
-It is recommended to use **pip** or **conda** for installation. Please make sure
-**the latest version** is installed, as PyOD is updated frequently:
+PyOD is designed for easy installation using either **pip** or **conda**. We recommend using the latest version of PyOD due to frequent updates and enhancements:
 
 .. code-block:: bash
 
@@ -13,7 +12,7 @@ It is recommended to use **pip** or **conda** for installation. Please make sure
 
    conda install -c conda-forge pyod
 
-Alternatively, you could clone and run setup.py file:
+Alternatively, you can clone and run the setup.py file:
 
 .. code-block:: bash
 
@@ -21,43 +20,24 @@ Alternatively, you could clone and run setup.py file:
    cd pyod
    pip install .
 
+**Required Dependencies**:
 
-**Required Dependencies**\ :
-
-
-* Python 2.7, 3.5, 3.6, or 3.7
-* combo>=0.0.8
+* Python 3.8 or higher
 * joblib
-* numpy>=1.13
-* numba>=0.35
-* scipy>=0.20.0
-* scikit_learn>=0.19.1
-* statsmodels
-
+* matplotlib
+* numpy>=1.19
+* numba>=0.51
+* scipy>=1.5.1
+* scikit_learn>=0.22.0
 
 **Optional Dependencies (see details below)**:
 
 * combo (optional, required for models/combination.py and FeatureBagging)
-* keras (optional, required for AutoEncoder, and other deep learning models)
-* matplotlib (optional, required for running examples)
-* pandas (optional, required for running benchmark)
+* pytorch (optional, required for deep learning models)
 * suod (optional, required for running SUOD model)
-* tensorflow (optional, required for AutoEncoder, and other deep learning models)
 * xgboost (optional, required for XGBOD)
+* pythresh (optional, required for thresholding)
 
 .. warning::
 
-    PyOD has multiple neural network based models, e.g., AutoEncoders, which are
-    implemented in both PyTorch and Tensorflow. However, PyOD does **NOT** install DL libraries for you.
-    This reduces the risk of interfering with your local copies.
-    If you want to use neural-net based models, please make sure Keras and a backend library, e.g., TensorFlow, are installed.
-    Instructions are provided: `neural-net FAQ <https://github.com/yzhao062/pyod/wiki/Setting-up-Keras-and-Tensorflow-for-Neural-net-Based-models>`_.
-    Similarly, models depending on **xgboost**, e.g., XGBOD, would **NOT** enforce xgboost installation by default.
-
-
-.. warning::
-
-    PyOD contains multiple models that also exist in scikit-learn. However, these two
-    libraries' API is not exactly the same--it is recommended to use only one of them
-    for consistency but not mix the results. Refer `scikit-learn and PyOD <https://pyod.readthedocs.io/en/latest/issues.html>`_
-    for more information.
+    PyOD includes several neural network-based models, such as AutoEncoders, implemented in PyTorch. These deep learning libraries are not automatically installed by PyOD to avoid conflicts with existing installations. If you plan to use neural-net based models, please ensure these libraries are installed. See the `neural-net FAQ <https://github.com/yzhao062/pyod/wiki/Setting-up-Keras-and-Tensorflow-for-Neural-net-Based-models>`_ for guidance. Additionally, xgboost is not installed by default but is required for models like XGBOD.

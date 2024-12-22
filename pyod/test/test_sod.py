@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
 import unittest
+
 # noinspection PyProtectedMember
 from numpy.testing import assert_allclose
 from numpy.testing import assert_array_less
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
-
-from sklearn.metrics import roc_auc_score
-from sklearn.base import clone
 from scipy.stats import rankdata
+from sklearn.base import clone
+from sklearn.metrics import roc_auc_score
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -30,7 +28,7 @@ class TestSOD(unittest.TestCase):
         self.n_test = 50
         self.contamination = 0.1
         self.roc_floor = 0.8
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
             n_train=self.n_train, n_test=self.n_test,
             contamination=self.contamination, random_state=42)
 
@@ -66,12 +64,12 @@ class TestSOD(unittest.TestCase):
                 self.clf.labels_ is not None)
         assert (hasattr(self.clf, 'threshold_') and
                 self.clf.threshold_ is not None)
-        assert (hasattr(self.clf, 'alpha_') and
-                self.clf.alpha_ is not None)
-        assert (hasattr(self.clf, 'ref_set_') and
-                self.clf.ref_set_ is not None)
-        assert (hasattr(self.clf, 'n_neighbors_') and
-                self.clf.n_neighbors_ is not None)
+        assert (hasattr(self.clf, 'alpha') and
+                self.clf.alpha is not None)
+        assert (hasattr(self.clf, 'ref_set') and
+                self.clf.ref_set is not None)
+        assert (hasattr(self.clf, 'n_neighbors') and
+                self.clf.n_neighbors is not None)
 
     def test_train_scores(self):
         assert_equal(len(self.clf.decision_scores_), self.X_train.shape[0])
@@ -127,6 +125,21 @@ class TestSOD(unittest.TestCase):
         assert (confidence.min() >= 0)
         assert (confidence.max() <= 1)
 
+    def test_prediction_with_rejection(self):
+        pred_labels = self.clf.predict_with_rejection(self.X_test,
+                                                      return_stats=False)
+        assert_equal(pred_labels.shape, self.y_test.shape)
+
+    def test_prediction_with_rejection_stats(self):
+        _, [expected_rejrate, ub_rejrate,
+            ub_cost] = self.clf.predict_with_rejection(self.X_test,
+                                                       return_stats=True)
+        assert (expected_rejrate >= 0)
+        assert (expected_rejrate <= 1)
+        assert (ub_rejrate >= 0)
+        assert (ub_rejrate <= 1)
+        assert (ub_cost >= 0)
+
     def test_fit_predict(self):
         pred_labels = self.clf.fit_predict(self.X_train)
         assert_equal(pred_labels.shape, self.y_train.shape)
@@ -158,10 +171,8 @@ class TestSOD(unittest.TestCase):
         assert_array_less(pred_ranks, 1.01)
         assert_array_less(-0.1, pred_ranks)
 
-    # todo: fix clone issue
     def test_model_clone(self):
-        pass
-        # clone_clf = clone(self.clf)
+        clone_clf = clone(self.clf)
 
     def tearDown(self):
         pass

@@ -1,26 +1,20 @@
 API CheatSheet
 ==============
 
-The following APIs are applicable for all detector models for easy use.
+The full API Reference is available at `PyOD Documentation <https://pyod.readthedocs.io/en/latest/pyod.html>`_. Below is a quick cheatsheet for all detectors:
 
-* :func:`pyod.models.base.BaseDetector.fit`: Fit detector. y is ignored in unsupervised methods.
-* :func:`pyod.models.base.BaseDetector.decision_function`: Predict raw anomaly score of X using the fitted detector.
-* :func:`pyod.models.base.BaseDetector.predict`: Predict if a particular sample is an outlier or not using the fitted detector.
-* :func:`pyod.models.base.BaseDetector.predict_proba`: Predict the probability of a sample being outlier using the fitted detector.
-* :func:`pyod.models.base.BaseDetector.predict_confidence`: Predict the model's sample-wise confidence (available in predict and predict_proba).
+* :func:`pyod.models.base.BaseDetector.fit`: The parameter y is ignored in unsupervised methods.
+* :func:`pyod.models.base.BaseDetector.decision_function`: Predict raw anomaly scores for X using the fitted detector.
+* :func:`pyod.models.base.BaseDetector.predict`: Determine whether a sample is an outlier or not as binary labels using the fitted detector.
+* :func:`pyod.models.base.BaseDetector.predict_proba`: Estimate the probability of a sample being an outlier using the fitted detector.
+* :func:`pyod.models.base.BaseDetector.predict_confidence`: Assess the model's confidence on a per-sample basis (applicable in predict and predict_proba) :cite:`a-perini2020quantifying`.
 
 
-Key Attributes of a fitted model:
+**Key Attributes of a fitted model**:
 
-* :attr:`pyod.models.base.BaseDetector.decision_scores_`: The outlier scores of the training data. The higher, the more abnormal.
+* :attr:`pyod.models.base.BaseDetector.decision_scores_`: Outlier scores of the training data. Higher scores typically indicate more abnormal behavior. Outliers usually have higher scores.
   Outliers tend to have higher scores.
-* :attr:`pyod.models.base.BaseDetector.labels_`: The binary labels of the training data. 0 stands for inliers and 1 for outliers/anomalies.
-
-
-**Fast training and prediction**: it is possible to train and predict with
-a large number of detection models in PyOD by leveraging SUOD framework :cite:`zhao2021suod`.
-See  `SUOD Paper <https://www.andrew.cmu.edu/user/yuezhao2/papers/21-mlsys-suod.pdf>`_
-and  `repository <https://github.com/yzhao062/SUOD>`_.
+* :attr:`pyod.models.base.BaseDetector.labels_`: Binary labels of the training data, where 0 indicates inliers and 1 indicates outliers/anomalies.
 
 
 See base class definition below:

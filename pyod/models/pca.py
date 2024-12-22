@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """Principal Component Analysis (PCA) Outlier Detector
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.decomposition import PCA as sklearn_PCA
-from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from .base import BaseDetector
 from ..utils.utility import check_parameter

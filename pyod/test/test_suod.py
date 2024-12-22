@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
+import unittest
 from os import path
 
-import unittest
 # noinspection PyProtectedMember
-from numpy.testing import assert_allclose
-from numpy.testing import assert_array_less
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
-
+from scipy.io import loadmat
+from sklearn.base import clone
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.utils.validation import check_X_y
-from scipy.io import loadmat
-
-from sklearn.metrics import roc_auc_score
-from sklearn.base import clone
-from scipy.stats import rankdata
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -30,7 +23,6 @@ from pyod.models.suod import SUOD
 from pyod.models.lof import LOF
 from pyod.models.iforest import IForest
 from pyod.models.copod import COPOD
-from pyod.utils.utility import standardizer
 from pyod.utils.data import generate_data
 
 
@@ -113,7 +105,6 @@ class TestSUOD(unittest.TestCase):
         with assert_raises(ValueError):
             self.clf.predict_proba(self.X_test, method='something')
 
-
     def test_prediction_labels_confidence(self):
         pred_labels, confidence = self.clf.predict(self.X_test,
                                                    return_confidence=True)
@@ -132,6 +123,21 @@ class TestSUOD(unittest.TestCase):
         assert_equal(confidence.shape, self.y_test.shape)
         assert (confidence.min() >= 0)
         assert (confidence.max() <= 1)
+
+    def test_prediction_with_rejection(self):
+        pred_labels = self.clf.predict_with_rejection(self.X_test,
+                                                      return_stats=False)
+        assert_equal(pred_labels.shape, self.y_test.shape)
+
+    def test_prediction_with_rejection_stats(self):
+        _, [expected_rejrate, ub_rejrate,
+            ub_cost] = self.clf.predict_with_rejection(self.X_test,
+                                                       return_stats=True)
+        assert (expected_rejrate >= 0)
+        assert (expected_rejrate <= 1)
+        assert (ub_rejrate >= 0)
+        assert (ub_rejrate <= 1)
+        assert (ub_cost >= 0)
 
     def test_fit_predict(self):
         pred_labels = self.clf.fit_predict(self.X_train)

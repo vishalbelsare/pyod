@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import print_function
+
 
 import os
 import sys
-import numpy as np
 import unittest
+
+import numpy as np
 # noinspection PyProtectedMember
 from numpy.testing import *
 from numpy.testing import assert_array_less
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
-
-from sklearn.metrics import roc_auc_score
 from scipy.stats import rankdata
+from sklearn.base import clone
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -35,7 +34,7 @@ class TestROD(unittest.TestCase):
         self.data_scaler = None
         self.angles_scalers1 = None
         self.angles_scalers2 = None
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
             n_train=self.n_train, n_test=self.n_test, n_features=4,
             contamination=self.contamination, random_state=42)
 
@@ -88,6 +87,21 @@ class TestROD(unittest.TestCase):
         assert (confidence.min() >= 0)
         assert (confidence.max() <= 1)
 
+    def test_prediction_with_rejection(self):
+        pred_labels = self.clf.predict_with_rejection(self.X_test,
+                                                      return_stats=False)
+        assert_equal(pred_labels.shape, self.y_test.shape)
+
+    def test_prediction_with_rejection_stats(self):
+        _, [expected_rejrate, ub_rejrate,
+            ub_cost] = self.clf.predict_with_rejection(self.X_test,
+                                                       return_stats=True)
+        assert (expected_rejrate >= 0)
+        assert (expected_rejrate <= 1)
+        assert (ub_rejrate >= 0)
+        assert (ub_rejrate <= 1)
+        assert (ub_cost >= 0)
+
     def test_fit_predict(self):
         pred_labels = self.clf.fit_predict(self.X_train)
         assert_equal(pred_labels.shape, self.y_train.shape)
@@ -128,11 +142,14 @@ class TestROD(unittest.TestCase):
 
         with assert_raises(IndexError):
             rod_3D(X_2D)
-        assert_array_equal(ROD().decision_function(X_2D),
+        scores = ROD().fit(X_2D).decision_scores_
+        assert_array_equal(scores,
                            rod_3D(np.hstack((X_2D, np.zeros(
                                shape=(X_2D.shape[0], 3 - X_2D.shape[1])))))[0])
-        assert_array_equal(ROD().decision_function(X_3D), rod_3D(X_3D)[0])
-        assert_array_equal(ROD().decision_function(X_4D),
+        scores = ROD().fit(X_3D).decision_scores_
+        assert_array_equal(scores, rod_3D(X_3D)[0])
+        scores = ROD().fit(X_4D).decision_scores_
+        assert_array_equal(scores,
                            rod_nD(X_4D, False, self.gm, self.data_scaler,
                                   self.angles_scalers1, self.angles_scalers2)[
                                0])
@@ -160,10 +177,8 @@ class TestROD(unittest.TestCase):
         gm, _ = mad(np.array([1, 2, 3]))
         assert_equal([0.6745, 0.0, 0.6745], gm)
 
-    # todo: fix clone issue
     def test_model_clone(self):
-        pass
-        # clone_clf = clone(self.clf)
+        clone_clf = clone(self.clf)
 
     def tearDown(self):
         pass

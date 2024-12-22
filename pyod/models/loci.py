@@ -5,14 +5,12 @@ Part of the codes are adapted from https://github.com/Cloudy10/loci
 # Author: Winston Li <jk_zhengli@hotmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from numba import njit
+from scipy.spatial.distance import pdist, squareform
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
-from scipy.spatial.distance import pdist, squareform
 
 from .base import BaseDetector
 

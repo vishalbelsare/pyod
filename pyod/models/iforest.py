@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
 """IsolationForest Outlier Detector. Implemented on scikit-learn library.
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from joblib import Parallel
 from joblib.parallel import delayed
-from sklearn.utils.fixes import _joblib_parallel_args
-
 from sklearn.ensemble import IsolationForest
-from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from .base import BaseDetector
-from ..utils.utility import invert_order
 # noinspection PyProtectedMember
-from ..utils.utility import _get_sklearn_version
+from ..utils.utility import invert_order
 
 
 # TODO: behavior of Isolation Forest will change in sklearn 0.22. See below.
@@ -209,28 +204,15 @@ class IForest(BaseDetector):
         # In sklearn 0.20+ new behaviour is added (arg behaviour={'new','old'})
         # to IsolationForest that shifts the location of the anomaly scores
         # noinspection PyProtectedMember
-        sklearn_version = _get_sklearn_version()
-        if sklearn_version == 21:
-            self.detector_ = IsolationForest(n_estimators=self.n_estimators,
-                                             max_samples=self.max_samples,
-                                             contamination=self.contamination,
-                                             max_features=self.max_features,
-                                             bootstrap=self.bootstrap,
-                                             n_jobs=self.n_jobs,
-                                             behaviour=self.behaviour,
-                                             random_state=self.random_state,
-                                             verbose=self.verbose)
 
-        # Do not pass behaviour argument when sklearn version is < 0.20 or >0.21
-        else:  # pragma: no cover
-            self.detector_ = IsolationForest(n_estimators=self.n_estimators,
-                                             max_samples=self.max_samples,
-                                             contamination=self.contamination,
-                                             max_features=self.max_features,
-                                             bootstrap=self.bootstrap,
-                                             n_jobs=self.n_jobs,
-                                             random_state=self.random_state,
-                                             verbose=self.verbose)
+        self.detector_ = IsolationForest(n_estimators=self.n_estimators,
+                                         max_samples=self.max_samples,
+                                         contamination=self.contamination,
+                                         max_features=self.max_features,
+                                         bootstrap=self.bootstrap,
+                                         n_jobs=self.n_jobs,
+                                         random_state=self.random_state,
+                                         verbose=self.verbose)
 
         self.detector_.fit(X=X, y=None, sample_weight=None)
 
@@ -285,6 +267,27 @@ class IForest(BaseDetector):
         return self.detector_.max_samples_
 
     @property
+    def estimators_features_(self):
+        """The indeces of the subset of features used to train the estimators.
+        Decorator for scikit-learn Isolation Forest attributes.
+        """
+        return self.detector_.estimators_features_
+
+    @property
+    def n_features_in_(self):
+        """The number of features seen during the fit.
+        Decorator for scikit-learn Isolation Forest attributes.
+        """
+        return self.detector_.n_features_in_
+
+    @property
+    def offset_(self):
+        """Offset used to define the decision function from the raw scores.
+        Decorator for scikit-learn Isolation Forest attributes.
+        """
+        return self.detector_.offset_
+
+    @property
     def feature_importances_(self):
         """The impurity-based feature importance. The higher, the more
         important the feature. The importance of a feature is computed as the
@@ -306,8 +309,7 @@ class IForest(BaseDetector):
         """
         check_is_fitted(self)
         all_importances = Parallel(
-            n_jobs=self.n_jobs, **_joblib_parallel_args(prefer="threads")
-        )(
+            n_jobs=self.n_jobs)(
             delayed(getattr)(tree, "feature_importances_")
             for tree in self.detector_.estimators_
             if tree.tree_.node_count > 1

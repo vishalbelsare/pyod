@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
-
 import unittest
+
+import numpy as np
 # noinspection PyProtectedMember
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
-
-import numpy as np
 
 # temporary solution for relative imports in case pyod is not installed
 # if pyod is installed, no need to use the following line
@@ -38,7 +35,7 @@ class TestData(unittest.TestCase):
         self.random_state = 42
 
     def test_data_generate(self):
-        X_train, y_train, X_test, y_test = \
+        X_train, X_test, y_train, y_test = \
             generate_data(n_train=self.n_train,
                           n_test=self.n_test,
                           contamination=self.contamination)
@@ -59,7 +56,7 @@ class TestData(unittest.TestCase):
         assert_allclose(self.contamination, out_perc, atol=0.01)
 
     def test_data_generate2(self):
-        X_train, y_train, X_test, y_test = \
+        X_train, X_test, y_train, y_test = \
             generate_data(n_train=self.n_train,
                           n_test=self.n_test,
                           n_features=3,
@@ -371,7 +368,7 @@ class TestData(unittest.TestCase):
                                       random_state=self.random_state)
 
     def test_evaluate_print(self):
-        X_train, y_train, X_test, y_test = generate_data(
+        X_train, X_test, y_train, y_test = generate_data(
             n_train=self.n_train,
             n_test=self.n_test,
             contamination=self.contamination)
@@ -390,7 +387,7 @@ class TestData(unittest.TestCase):
         assert_allclose(X_train[inlier_index:, :], X_outliers)
 
     def test_check_consistent_shape(self):
-        X_train, y_train, X_test, y_test = generate_data(
+        X_train, X_test, y_train, y_test = generate_data(
             n_train=self.n_train,
             n_test=self.n_test,
             contamination=self.contamination)

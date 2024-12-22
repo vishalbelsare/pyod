@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 """Clustering Based Local Outlier Factor (CBLOF)
 """
-# Author: Yue Zhao <zhaoy@cmu.edu>
+# Author: Yue Zhao <yzhao062@gmail.com>
 #         Shangwen Huang <https://github.com/shangwen777>
 # License: BSD 2 clause
 
-from __future__ import division
-from __future__ import print_function
 
 import warnings
+
 import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.validation import check_array
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.validation import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from .base import BaseDetector
-from ..utils.utility import check_parameter
 from ..utils.stat_models import pairwise_distances_no_broadcast
+from ..utils.utility import check_parameter
 
 __all__ = ['CBLOF']
 
